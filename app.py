@@ -1,26 +1,16 @@
-from flask import Flask, request
+import os
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
-app = Flask(__name__)
+TOKEN = os.environ.get("TELEGRAM_TOKEN")
 
-@app.route('/')
-def home():
-    return "Bhai amar bot jinda ache! 🔥"
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Bhai ami online 😎 Render e choltesi. Bol ki help lagbe?")
 
-@app.route('/whatsapp', methods=['POST'])
-def whatsapp():
-    msg = request.form.get('Body', '').lower()
-    
-    if 'hello' in msg or 'hi' in msg:
-        reply = "Hello bhai! Ami tor mini AI bot ❤️ Ki khobor?"
-    elif 'kemon' in msg:
-        reply = "Bindas achi bhai. Tui bol 😎"
-    elif 'naam' in msg:
-        reply = "Amar naam Mini AI Bot. Tor jonno banano."
-    else:
-        reply = "Bhai ami notun. Sudhu hello, kemon acho, naam ki bolte pari 🤖"
-    
-    return f'<Response><Message>{reply}</Message></Response>'
+async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(f"Tui bolsos: {update.message.text}")
 
-if __name__ == '__main__':
- import os
-app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+app = ApplicationBuilder().token(TOKEN).build()
+app.add_handler(CommandHandler("start", start))
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
+app.run_polling()
